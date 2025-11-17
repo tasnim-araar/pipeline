@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_HUB_USER = 'tasnim-dockerhub'                // ton username Docker Hub
+        DOCKER_HUB_USER = 'tasnimdockerhub'                // ton username Docker Hub
         DOCKER_HUB_PASS = credentials('docker-hub-token')  // token Docker Hub ajouté dans Jenkins
     }
 
