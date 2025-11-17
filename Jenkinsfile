@@ -2,11 +2,12 @@ pipeline {
     agent any
 
     tools {
-        maven 'M2_HOME'   // Nom de l'installation Maven configurée dans Jenkins
-        jdk   'JAVA_HOME'  // Nom de l'installation JDK configurée dans Jenkins
+        maven 'M2_HOME'     
+        jdk   'JAVA_HOME'  
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 git credentialsId: 'github-token',
@@ -15,36 +16,14 @@ pipeline {
             }
         }
 
-        stage('Check Tools') {
+        stage('Build with Maven') {
             steps {
-                echo '🔧 Vérification de Java et Maven...'
-                bat 'java -version'
+                echo "📦 Exécution de Maven..."
                 bat 'mvn -v'
+                bat 'mvn clean package'
             }
         }
 
-        stage('Build Java') {
-            steps {
-                script {
-                    // Crée le dossier bin si nécessaire
-                    bat 'if not exist bin mkdir bin'
-
-                    // Liste tous les fichiers .java dans src
-                    def javaFiles = bat(script: 'dir /b /s src\\*.java', returnStdout: true).trim().split('\r\n')
-
-                    if (javaFiles.size() > 0 && javaFiles[0] != '') {
-                        echo "Fichiers Java trouvés : ${javaFiles}"
-                        // Construit la commande javac avec guillemets autour de chaque fichier
-                        def javacCmd = "javac -d bin " + javaFiles.collect { "\"${it}\"" }.join(' ')
-                        bat javacCmd
-                        // Crée le JAR
-                        bat 'jar cvf app.jar -C bin .'
-                    } else {
-                        echo 'Aucun fichier .java trouvé, compilation et JAR ignorés.'
-                    }
-                }
-            }
-        }
     }
 
     post {
