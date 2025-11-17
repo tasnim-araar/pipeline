@@ -1,23 +1,39 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'M2_HOME'   // Nom de l'installation Maven configurée dans Jenkins
+        jdk   'JAVA_HOME'  // Nom de l'installation JDK configurée dans Jenkins
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/tasnim-araar/pipeline.git', branch: 'main', credentialsId: 'github-token'
+                git credentialsId: 'github-token',
+                    url: 'https://github.com/tasnim-araar/pipeline.git',
+                    branch: 'main'
             }
         }
 
-        stage('Compile Java') {
+        stage('Check Tools') {
             steps {
-                bat 'if not exist bin mkdir bin'
-                bat 'javac -d bin src\\*.java'
+                echo '🔧 Vérification de Java et Maven...'
+                bat 'java -version'
+                bat 'mvn -v'
             }
         }
 
-        stage('Create JAR') {
+        stage('Build Java') {
             steps {
-                bat 'jar cf myapp.jar -C bin .'
+                script {
+                    if (fileExists('src')) {
+                        bat 'if not exist bin mkdir bin'
+                        bat 'javac -d bin src\\*.java'
+                        bat 'jar cvf app.jar -C bin .'
+                    } else {
+                        echo 'Aucun code Java trouvé, compilation et JAR ignorés.'
+                    }
+                }
             }
         }
     }
