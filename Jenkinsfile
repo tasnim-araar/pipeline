@@ -6,10 +6,16 @@ pipeline {
         jdk   'JAVA_HOME'  
     }
 
+    environment {
+        DOCKER_HUB_USER = 'tasnim-dockerhub'                // ton username Docker Hub
+        DOCKER_HUB_PASS = credentials('docker-hub-token')  // token Docker Hub ajouté dans Jenkins
+    }
+
     stages {
 
         stage('Checkout') {
             steps {
+                echo "🔄 Clonage du projet depuis GitHub..."
                 git credentialsId: 'github-token',
                     url: 'https://github.com/tasnim-araar/pipeline.git',
                     branch: 'main'
@@ -23,8 +29,22 @@ pipeline {
                 bat 'mvn -v'
                 
                 echo "📦 Build du projet Maven (tests ignorés)..."
-                // On skip les tests pour éviter les erreurs liées à MySQL
                 bat 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "🐳 Construction de l'image Docker..."
+                bat "docker build -t %DOCKER_HUB_USER%/pipeline:1.0 ."
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                echo "🚀 Push de l'image Docker sur Docker Hub..."
+                bat "echo %DOCKER_HUB_PASS% | docker login -u %DOCKER_HUB_USER% --password-stdin"
+                bat "docker push %DOCKER_HUB_USER%/pipeline:1.0"
             }
         }
 
