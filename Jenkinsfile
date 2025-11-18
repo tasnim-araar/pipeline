@@ -7,8 +7,8 @@ pipeline {
     }
 
     tools {
-        maven 'M2_HOME' // Assurez-vous que ce Maven est installé dans WSL
-        jdk 'JAVA_HOME'  // Assurez-vous que ce JDK est installé dans WSL
+        maven 'M2_HOME' // Maven installé dans WSL
+        jdk 'JAVA_HOME'  // JDK installé dans WSL
     }
 
     stages {
