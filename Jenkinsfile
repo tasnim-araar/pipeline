@@ -6,8 +6,8 @@ pipeline {
     }
 
     tools {
-        maven 'M2_HOME' // Maven installé dans WSL
-        jdk 'JAVA_HOME'  // JDK installé dans WSL
+        maven 'M2_HOME'
+        jdk 'JAVA_HOME'
     }
 
     stages {
@@ -38,15 +38,18 @@ pipeline {
             }
         }
 
-       stage('Push Docker Image') {
-    steps {
-        echo "🔐 Connexion sécurisée à Docker Hub..."
-        withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_PASS')]) {
-            sh """
-                echo \$DOCKER_PASS | docker login -u ${DOCKER_USER} --password-stdin
-                docker push ${DOCKER_USER}/pipeline:latest
-                docker logout
-            """
+        stage('Push Docker Image') {
+            steps {
+                echo "🔐 Connexion à Docker Hub et push de l'image..."
+                withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo \$DOCKER_PASS | docker login -u ${DOCKER_USER} --password-stdin
+                        docker push ${DOCKER_USER}/pipeline:latest
+                        docker logout
+                    """
+                }
+            }
+        }
     }
 
     post {
