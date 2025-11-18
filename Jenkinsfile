@@ -38,20 +38,15 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image') {
-            steps {
-                echo "🔐 Connexion sécurisée à Docker Hub..."
-                withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_PASS')]) {
-                    // Création d'un fichier config temporaire pour éviter docker-credential helpers Windows
-                    sh """
-                        mkdir -p ~/.docker
-                        echo \$DOCKER_PASS | docker login -u ${DOCKER_USER} --password-stdin --config ~/.docker
-                        docker push ${DOCKER_USER}/pipeline:latest
-                        docker logout --config ~/.docker
-                    """
-                }
-            }
-        }
+       stage('Push Docker Image') {
+    steps {
+        echo "🔐 Connexion sécurisée à Docker Hub..."
+        withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_PASS')]) {
+            sh """
+                echo \$DOCKER_PASS | docker login -u ${DOCKER_USER} --password-stdin
+                docker push ${DOCKER_USER}/pipeline:latest
+                docker logout
+            """
     }
 
     post {
