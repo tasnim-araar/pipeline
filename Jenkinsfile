@@ -4,11 +4,12 @@ pipeline {
     environment {
         DOCKER_USER = 'tasnimdockerhub'
         DOCKER_PASS = credentials('docker-hub-token')
+        PATH = "/mnt/c/Program Files/Eclipse Adoptium/jdk-17.0.15.6-hotspot/bin:/mnt/c/Program Files (x86)/apache-maven-3.9.11/bin:${env.PATH}"
     }
 
     tools {
-        maven 'M2_HOME' // Maven installé dans WSL
-        jdk 'JAVA_HOME'  // JDK installé dans WSL
+        maven 'M2_HOME'
+        jdk 'JAVA_HOME'
     }
 
     stages {
@@ -24,11 +25,11 @@ pipeline {
         stage('Build Maven') {
             steps {
                 echo "🔧 Vérification des outils..."
-                sh 'java -version'
-                sh 'mvn -v'
+                sh 'java.exe -version'
+                sh 'mvn.cmd -v'
 
                 echo "📦 Compilation du projet Maven..."
-                sh 'mvn clean package -DskipTests'
+                sh 'mvn.cmd clean package -DskipTests'
             }
         }
 
@@ -42,7 +43,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 echo "🔐 Connexion à Docker Hub..."
-                sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                sh "echo \$DOCKER_PASS | docker login -u ${DOCKER_USER} --password-stdin"
 
                 echo "📤 Push de l'image vers Docker Hub..."
                 sh "docker push ${DOCKER_USER}/pipeline:latest"
