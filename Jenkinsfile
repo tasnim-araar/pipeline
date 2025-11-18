@@ -1,62 +1,51 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_USER = 'tasnimdockerhub'
-        DOCKER_PASS = credentials('docker-hub-token')
-        PATH = "/mnt/c/Program Files/Eclipse Adoptium/jdk-17.0.15.6-hotspot/bin:/mnt/c/Program Files (x86)/apache-maven-3.9.11/bin:${env.PATH}"
-    }
-
     tools {
-        maven 'M2_HOME'
-        jdk 'JAVA_HOME'
+        maven 'M2_HOME'     
+        jdk   'JAVA_HOME'  
     }
 
     stages {
+
         stage('Checkout') {
             steps {
-                echo "🔄 Récupération du code source..."
                 git credentialsId: 'github-token',
                     url: 'https://github.com/tasnim-araar/pipeline.git',
                     branch: 'main'
             }
         }
 
-        stage('Build Maven') {
+        stage('Build with Maven') {
             steps {
-                echo "🔧 Vérification des outils..."
-                sh 'java.exe -version'
-                sh 'mvn.cmd -v'
-
-                echo "📦 Compilation du projet Maven..."
-                sh 'mvn.cmd clean package -DskipTests'
+                echo "📦 Vérification des outils..."
+                bat 'java -version'
+                bat 'mvn -v'
+                
+                echo "📦 Build du projet Maven (tests ignorés)..."
+                // On skip les tests pour éviter les erreurs liées à MySQL
+                bat 'mvn clean package -DskipTests'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Package') {
             steps {
-                echo "🐳 Construction de l'image Docker..."
-                sh "docker build -t ${DOCKER_USER}/pipeline:latest ."
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                echo "🔐 Connexion à Docker Hub..."
-                sh "echo \$DOCKER_PASS | docker login -u ${DOCKER_USER} --password-stdin"
-
-                echo "📤 Push de l'image vers Docker Hub..."
-                sh "docker push ${DOCKER_USER}/pipeline:latest"
+                echo "📦 Le projet est compilé et packagé avec succès."
             }
         }
     }
 
     post {
         success {
-            echo "✅ Pipeline exécuté avec succès !"
+            echo '✅ Pipeline terminé avec succès !'
         }
         failure {
-            echo "❌ Pipeline échoué !"
+            echo '❌ Pipeline échoué !'
+            emailext (
+                to: "tasnim.araar@esprit.tn",
+                subject: "❌ Build Failed : ${env.JOB_NAME}",
+                body: "Le build Jenkins a échoué.\nVoir console output : ${env.BUILD_URL}"
+            )
         }
     }
 }
