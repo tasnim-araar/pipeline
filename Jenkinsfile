@@ -39,17 +39,18 @@ pipeline {
         }
 
         stage('Push Docker Image') {
-            steps {
-                echo "🔐 Connexion à Docker Hub et push de l'image..."
-                withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_PASS')]) {
-                    sh """
-                        echo \$DOCKER_PASS | docker login -u ${DOCKER_USER} --password-stdin
-                        docker push ${DOCKER_USER}/pipeline:latest
-                        docker logout
-                    """
-                }
-            }
+    steps {
+        echo "🔐 Connexion à Docker Hub et push de l'image..."
+        withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_PASS')]) {
+            sh """
+                export DOCKER_CONFIG=\$(mktemp -d)
+                echo \$DOCKER_PASS | docker login -u ${DOCKER_USER} --password-stdin
+                docker push ${DOCKER_USER}/pipeline:latest
+            """
         }
+    }
+}
+
     }
 
     post {
