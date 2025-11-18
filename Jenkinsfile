@@ -25,28 +25,28 @@ pipeline {
         stage('Build with Maven') {
             steps {
                 echo "📦 Vérification des outils..."
-                sh 'java -version'
-                sh 'mvn -v'
+                bat 'java -version'
+                bat 'mvn -v'
                 
                 echo "📦 Build du projet Maven..."
-                sh 'mvn clean package -DskipTests'
+                bat 'mvn clean package -DskipTests'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 echo "🐳 Construction de l'image Docker..."
-                sh "docker build -t ${DOCKER_USER}/pipeline:1.0 ."
+                bat "docker build -t %DOCKER_USER%/pipeline:1.0 ."
             }
         }
 
         stage('Push Docker Image') {
             steps {
                 echo "🔑 Connexion à Docker Hub..."
-                sh "echo \$DOCKER_PASS | docker login -u ${DOCKER_USER} --password-stdin"
+                bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
 
                 echo "🚀 Push de l'image..."
-                sh "docker push ${DOCKER_USER}/pipeline:1.0"
+                bat "docker push %DOCKER_USER%/pipeline:1.0"
             }
         }
     }
